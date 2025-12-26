@@ -4,21 +4,24 @@ import { escalate } from "@engine/escalation";
 //import { mockCoach } from "@engine/mockCoach";
 import { Trade } from "@models/Trade";
 import { RuleSet } from "@models/RuleSet";
-
+import { useState } from "react";
 import { CoachCard } from "./CoachCard";
 
 export function CoachPanel() {
-  const trade: Trade = {
-    tradeId: "1",
-    instrument: "NQ",
-    direction: "LONG",
-    entryTime: new Date(),
-    exitTime: new Date(),
-    contracts: 2,
-    plannedRR: 1.5,
-    pnl: -200,
-    session: "NY"
-  };
+  const [pnlInput, setPnlInput] = useState("");
+
+  const [trade, setTrade] = useState<Trade>({
+  tradeId: "1",
+  instrument: "NQ",
+  direction: "LONG",
+  entryTime: new Date(),
+  exitTime: new Date(),
+  contracts: 1,
+  plannedRR: 2,
+  pnl: 0,
+  session: "NY",
+});
+
 
   const rules: RuleSet = {
     maxRiskPerTrade: 300,
@@ -46,7 +49,20 @@ export function CoachPanel() {
     }
   );
 
+  console.log(evaluation);
+
+
   const escalation = escalate(evaluation, 3);
+
+  const isInCooldown = evaluation.violations.some(
+    (v) =>
+      v.ruleName.toLowerCase().includes("cooldown") &&
+      v.passed === false
+  );
+
+
+  
+  console.log("Cooldown active?", isInCooldown);
 
     const verdict =
     escalation?.level === "CRITICAL"
@@ -58,7 +74,14 @@ export function CoachPanel() {
 
 
     return (
-  <>
+  <div
+    style={{
+      maxWidth: 1100,
+      margin: "0 auto",
+      padding: "24px 16px",
+    }}
+  >
+
     <h2 style={{ marginBottom: 16 }}>Coach Feedback</h2>
 
     <div
@@ -117,6 +140,133 @@ export function CoachPanel() {
         </ul>
       </div>
 
+      {/* TRADE INPUT FORM */}
+      <div
+        style={{
+          border: "1px solid #2a2a2a",
+          borderRadius: 12,
+          padding: 16,
+          background: "#0f0f0f",
+        }}
+      >
+        {isInCooldown && (
+          <div
+            style={{
+              marginBottom: 14,
+              padding: "12px 14px",
+              borderRadius: 10,
+              background: "linear-gradient(180deg, #2a0f0f, #1a0b0b)",
+              border: "1px solid #ff4d4d",
+              color: "#ffd6d6",
+              fontSize: 13,
+              fontWeight: 600,
+            }}
+          >
+            🚨 COOLDOWN ACTIVE  
+            <div style={{ marginTop: 6, fontWeight: 400 }}>
+              You are allowed to log trades, but taking new trades during cooldown
+              statistically leads to losses.
+            </div>
+          </div>
+        )}
+
+
+        <h3 style={{ marginTop: 0 }}>Enter Trade</h3>
+
+        <div
+          style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+        }}
+      >
+
+          <label style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ width: 90, opacity: 0.9 }}>Instrument</span>
+            <input
+              style={{ width: 70 }}
+              value={trade.instrument}
+              onChange={(e) => setTrade({ ...trade, instrument: e.target.value })}
+            />
+          </label>
+
+
+
+          <label style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ width: 90, opacity: 0.9 }}>Direction</span>
+            <select
+              style={{ width: 77 }}
+              value={trade.direction}
+              onChange={(e) =>
+                setTrade({ ...trade, direction: e.target.value as "LONG" | "SHORT" })
+              }
+            >
+              <option value="LONG">LONG</option>
+              <option value="SHORT">SHORT</option>
+            </select>
+          </label>
+
+
+          <label style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ width: 90, opacity: 0.9 }}>Contracts</span>
+            <input
+              style={{ width: 70 }}
+              type="number"
+              value={trade.contracts}
+              onChange={(e) => setTrade({ ...trade, contracts: Number(e.target.value) })}
+            />
+          </label>
+
+
+          <label style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ width: 90, opacity: 0.9 }}>Planned RR</span>
+            <input
+              style={{ width: 70 }}
+              type="number"
+              value={trade.plannedRR}
+              onChange={(e) => setTrade({ ...trade, plannedRR: Number(e.target.value) })}
+            />
+          </label>
+
+
+          <label style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ width: 90 }}>PnL</span>
+
+            <input
+              type="text"
+              style={{ width: 70 }}
+              value={pnlInput}
+              onChange={(e) => {
+                const v = e.target.value;
+
+                // allow empty, "-", or numbers
+                if (/^-?\d*$/.test(v)) {
+                  setPnlInput(v);
+
+                  setTrade({
+                    ...trade,
+                    pnl: v === "" || v === "-" ? 0 : parseInt(v, 10),
+                  });
+                }
+              }}
+            />
+          </label>
+
+          <label style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ width: 90, opacity: 0.9 }}>Session</span>
+            <select
+              style={{ width: 77 }}
+              value={trade.session}
+              onChange={(e) => setTrade({ ...trade, session: e.target.value as any })}
+            >
+              <option value="NY">NY</option>
+              <option value="London">London</option>
+              <option value="Asia">Asia</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
       {/* LEFT BOTTOM — STOP TRADING */}
       {escalation && (
         <div>
@@ -128,6 +278,6 @@ export function CoachPanel() {
         </div>
       )}
     </div>
-  </>
+  </div>
 );
 }
