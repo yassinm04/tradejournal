@@ -1,6 +1,6 @@
 import { Trade } from "../models/Trade";
 import { RuleSet } from "../models/RuleSet";
-import { Violation, Severity } from "../models/Violation";
+import { Violations, Severity } from "../models/Violations";
 
 export interface TradeContext {
   tradesToday: number;
@@ -14,7 +14,7 @@ export interface UserInputs {
 }
 
 export interface TradeEvaluationResult {
-  violations: Violation[];
+  violations: Violations[];
   rulesPassed: number;
   rulesFailed: number;
   complianceScore: number; // 0–100
@@ -27,7 +27,7 @@ export function evaluateTrade(
   context: TradeContext,
   userInputs: UserInputs
 ): TradeEvaluationResult {
-  const violations: Violation[] = [];
+  const violations: Violations[] = [];
   let rulesPassed = 0;
   let rulesFailed = 0;
 

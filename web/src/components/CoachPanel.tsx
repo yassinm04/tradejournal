@@ -460,21 +460,21 @@ export function CoachPanel() {
     <h3 style={{ marginTop: 0 }}>Trade Review</h3>
 
     {selectedTrade.flags?.duringCooldown && (
-  <div
-    style={{
-      marginBottom: 12,
-      padding: "10px 12px",
-      borderRadius: 8,
-      background: "linear-gradient(180deg, #2a0f0f, #1a0b0b)",
-      border: "1px solid #ff4d4d",
-      color: "#ffd6d6",
-      fontSize: 13,
-      fontWeight: 600,
-    }}
-  >
-    🚨 This trade was taken during a cooldown period.
-  </div>
-)}
+      <div
+        style={{
+          marginBottom: 12,
+          padding: "10px 12px",
+          borderRadius: 8,
+          background: "linear-gradient(180deg, #2a0f0f, #1a0b0b)",
+          border: "1px solid #ff4d4d",
+          color: "#ffd6d6",
+          fontSize: 13,
+          fontWeight: 600,
+        }}
+      >
+        🚨 This trade was taken during a cooldown period.
+      </div>
+    )}
 
 
     {!selectedTrade?.evaluation ? (
